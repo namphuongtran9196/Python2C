@@ -40,3 +40,5 @@ private:
 
 void letterbox(Mat src, Mat& dst, Size new_shape = Size(640,640), int stride=32, bool auto_mode = true, 
 				Scalar color= Scalar(114,114,114),  bool scaleFill=false, bool scaleup=true );
+
+void scale_boxes(float* img1_shape, float* bboxes, float* img0_shape);

@@ -47,6 +47,17 @@ void letterbox(Mat src, Mat& dst, Size new_shape, int stride, bool auto_mode, Sc
     copyMakeBorder(dst, dst, top, bottom, left, right, BORDER_CONSTANT, color);  // add border
 }
 
+void scale_boxes(float* img1_shape, float* bboxes, float* img0_shape){
+	float gain = min(img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1]) ; // gain  = old / new
+    float pad[2] = {(img1_shape[1] - img0_shape[1] * gain) / 2, (img1_shape[0] - img0_shape[0] * gain) / 2} ; // wh padding
+
+	bboxes[0] = max((bboxes[0] - pad[0]) / gain, 0.0f);
+	bboxes[2] = max((bboxes[2] - pad[0]) / gain, 0.0f);
+	bboxes[1] = min((bboxes[1] - pad[1]) / gain, (float)img0_shape[0]);
+	bboxes[3] = min((bboxes[3] - pad[1]) / gain, (float)img0_shape[1]);
+
+}
+
 ////////////////////////////////////////////////// Tensorflow lite //////////////////////////////////////////////////
 
 TFLiteModel::TFLiteModel(const char *model, long modelSize) {

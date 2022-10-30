@@ -41,21 +41,25 @@ int main(int, char * argv[])
             cerr << "ERROR! blank frame grabbed\n";
             break;
         }
-        cvtColor(frame, frame, COLOR_BGR2RGB);
-        letterbox(frame, frame, Size(640,640), 32, false);
+        Mat image;
+        cvtColor(frame.clone(), image, COLOR_BGR2RGB);
+        letterbox(image, image, Size(640,640), 32, false);
         PredictResult res[MAX_OUTPUT];
-        model->detect(frame,res);
+        model->detect(image,res);
 
         for (int i = 0; i < MAX_OUTPUT; i ++){
             if (res[i].score > 0.25){
-                putText(frame, to_string(res[i].score), Point(res[i].xmin, res[i].ymin), FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 0, 255), 2);
-                rectangle(frame, Point(res[i].xmin, res[i].ymin), Point(res[i].xmax, res[i].ymax), Scalar(0, 0, 255), 2);
+                float bboxes[4] = {res[i].xmin, res[i].ymin, res[i].xmax,res[i].ymax};
+                float old_shape[2] = {640.0f,640.0f};
+                float raw_shape[2] = {(float)frame.size().height, (float) frame.size().width};
+                scale_boxes(old_shape, bboxes, raw_shape);
+                putText(frame, to_string(res[i].score), Point(bboxes[0], bboxes[1]), FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 0, 255), 2);
+                rectangle(frame, Point(bboxes[0], bboxes[1]), Point(bboxes[2], bboxes[3]), Scalar(0, 0, 255), 2);
             } else{
                 break;
             }
         }
         // show live and wait for a key with timeout long enough to show images
-        cvtColor(frame, frame, COLOR_RGB2BGR);
         imshow("Live", frame);
         if (waitKey(5) >= 0)
             break;
